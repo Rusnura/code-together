@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <script src="/static/sockjs.min.js"></script>
+  <script src="/static/stomp.min.js"></script>
+  <meta charset="UTF-8">
+  <title>Code together</title>
+
+  <script type="text/javascript">
+    let stompClient = null;
+
+    function connect() {
+      let socket = new SockJS('/code-together');
+      stompClient = Stomp.over(socket);
+      stompClient.connect({}, function(frame) {
+        // setConnected(true);
+        console.log('Connected: ' + frame);
+        stompClient.subscribe('/room/' + document.getElementById("roomId").value, function(message) {
+          // TODO message processing
+        });
+
+        console.log('Subscribed to topic: /room/' + document.getElementById("roomId").value);
+      });
+
+      function sendMessage() {
+        let username = document.getElementById("username").value;
+        let roomId = document.getElementById("roomId").value;
+        stompClient.send("/code-together/room/" + roomId, {},
+          JSON.stringify({'roomId':roomId,'from':username, 'text':'hi'}));
+      }
+
+      function disconnect() {
+        if(stompClient != null) {
+          stompClient.disconnect();
+        }
+        // setConnected(false);
+        console.log("Disconnected");
+      }
+    }
+
+
+    document.addEventListener("DOMContentLoaded", function() {
+      connect();
+
+      document.getElementById("code").onkeydown = function (params) {
+        console.log(params);
+      }
+    });
+  </script>
+</head>
+<body>
+  <b th:text="${'Hello, ' + name}"></b><br />
+  <b th:text="${'Your room is: ' + roomId}"></b><br />
+  <textarea id="code" cols="200" rows="20"></textarea>
+
+  <input type="hidden" id="username" th:value="${name}" readonly />
+  <input type="hidden" id="roomId" th:value="${roomId}" readonly />
+</body>
+</html>
