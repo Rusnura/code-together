@@ -13,12 +13,12 @@ public class IndexController {
     return "index";
   }
 
-  @GetMapping("/{roomId}")
-  public String index(@PathVariable String roomId,
-                      @RequestParam String name,
-                      ModelMap map) {
-    map.addAttribute("name", name);
-    map.addAttribute("roomId", roomId);
-    return "code-together";
-  }
+//  @GetMapping("/{roomId}")
+//  public String index(@PathVariable String roomId,
+//                      @RequestParam String name,
+//                      ModelMap map) {
+//    map.addAttribute("name", name);
+//    map.addAttribute("roomId", roomId);
+//    return "code-together";
+//  }
 }

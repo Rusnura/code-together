@@ -13,7 +13,7 @@ public class MessageController {
   @Autowired
   SimpMessagingTemplate messagingTemplate;
 
-  @MessageMapping("/chat/{roomId}")
+  @MessageMapping("/room/{roomId}")
   public void send(Message message) {
     OutputMessage outputMessage = new OutputMessage(message);
     messagingTemplate.convertAndSend(WebSocketConfiguration.TOPIC_PREFIX + "/" + message.getRoomId(), outputMessage);

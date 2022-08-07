@@ -5,23 +5,23 @@ import java.time.LocalDateTime;
 import java.util.Date;
 
 public class OutputMessage {
-  private String from;
+  private String username;
   private String text;
 
   private String time;
 
   public OutputMessage(Message message) {
-    this.from = message.getFrom();
+    this.username = message.getUsername();
     this.text = message.getText();
     time = new SimpleDateFormat("HH:mm").format(new Date());
   }
 
-  public String getFrom() {
-    return from;
+  public String getUsername() {
+    return username;
   }
 
-  public void setFrom(String from) {
-    this.from = from;
+  public void setUsername(String username) {
+    this.username = username;
   }
 
   public String getText() {
