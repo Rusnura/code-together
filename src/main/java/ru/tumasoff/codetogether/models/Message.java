@@ -3,12 +3,20 @@ package ru.tumasoff.codetogether.models;
 public class Message {
   private final String roomId;
   private final String username;
-  private final String text;
+  private final int startCursorPosition;
+  private final int endCursorPosition;
+  private final String key;
 
-  public Message(String type, String roomId, String username, String text) {
+  public Message(String roomId,
+                 String username,
+                 int startCursorPosition,
+                 int endCursorPosition,
+                 String key) {
     this.roomId = roomId;
     this.username = username;
-    this.text = text;
+    this.startCursorPosition = startCursorPosition;
+    this.endCursorPosition = endCursorPosition;
+    this.key = key;
   }
   public String getRoomId() {
     return roomId;
@@ -18,7 +26,15 @@ public class Message {
     return username;
   }
 
-  public String getText() {
-    return text;
+  public int getStartCursorPosition() {
+    return startCursorPosition;
+  }
+
+  public int getEndCursorPosition() {
+    return endCursorPosition;
+  }
+
+  public String getKey() {
+    return key;
   }
 }

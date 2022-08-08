@@ -9,7 +9,7 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 @Configuration
 @EnableWebSocketMessageBroker
 public class WebSocketConfiguration implements WebSocketMessageBrokerConfigurer {
-  public static final String TOPIC_PREFIX = "/room";
+  public static final String TOPIC_PREFIX = "/code-together/room";
 
   @Override
   public void configureMessageBroker(MessageBrokerRegistry registry) {
@@ -20,6 +20,6 @@ public class WebSocketConfiguration implements WebSocketMessageBrokerConfigurer 
   @Override
   public void registerStompEndpoints(StompEndpointRegistry registry) {
     registry.addEndpoint("/code-together").setAllowedOriginPatterns("*");
-//    registry.addEndpoint("/code-together").setAllowedOriginPatterns("*").withSockJS();
+    registry.addEndpoint("/code-together").setAllowedOriginPatterns("*").withSockJS();
   }
 }

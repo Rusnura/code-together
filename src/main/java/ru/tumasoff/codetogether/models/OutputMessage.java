@@ -1,19 +1,44 @@
 package ru.tumasoff.codetogether.models;
 
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
 import java.util.Date;
 
 public class OutputMessage {
+  String type;
+  private String roomId;
   private String username;
-  private String text;
-
+  private int startCursorPosition;
+  private int endCursorPosition;
+  private String key;
   private String time;
 
+  public OutputMessage() {
+  }
+
   public OutputMessage(Message message) {
+    this.type = "TYPE";
+    this.roomId = message.getRoomId();
     this.username = message.getUsername();
-    this.text = message.getText();
+    this.startCursorPosition = message.getStartCursorPosition();
+    this.endCursorPosition = message.getEndCursorPosition();
+    this.key = message.getKey();
     time = new SimpleDateFormat("HH:mm").format(new Date());
+  }
+
+  public String getType() {
+    return type;
+  }
+
+  public void setType(String type) {
+    this.type = type;
+  }
+
+  public String getRoomId() {
+    return roomId;
+  }
+
+  public void setRoomId(String roomId) {
+    this.roomId = roomId;
   }
 
   public String getUsername() {
@@ -24,19 +49,35 @@ public class OutputMessage {
     this.username = username;
   }
 
-  public String getText() {
-    return text;
+  public int getStartCursorPosition() {
+    return startCursorPosition;
   }
 
-  public void setText(String text) {
-    this.text = text;
+  public void setStartCursorPosition(int startCursorPosition) {
+    this.startCursorPosition = startCursorPosition;
+  }
+
+  public int getEndCursorPosition() {
+    return endCursorPosition;
+  }
+
+  public void setEndCursorPosition(int endCursorPosition) {
+    this.endCursorPosition = endCursorPosition;
+  }
+
+  public String getKey() {
+    return key;
+  }
+
+  public void setKey(String key) {
+    this.key = key;
   }
 
   public String getTime() {
     return time;
   }
 
-  public void setTime(LocalDateTime time) {
-    this.time = new SimpleDateFormat("HH:mm").format(time);
+  public void setTime(Date date) {
+    this.time = new SimpleDateFormat("HH:mm").format(date);
   }
 }
