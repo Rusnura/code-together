@@ -9,6 +9,7 @@ public class OutputMessage {
   private String username;
   private int startCursorPosition;
   private int endCursorPosition;
+  private String keyType;
   private String key;
   private String time;
 
@@ -22,6 +23,7 @@ public class OutputMessage {
     this.startCursorPosition = message.getStartCursorPosition();
     this.endCursorPosition = message.getEndCursorPosition();
     this.key = message.getKey();
+    this.keyType = message.getKeyType();
     time = new SimpleDateFormat("HH:mm").format(new Date());
   }
 
@@ -79,5 +81,13 @@ public class OutputMessage {
 
   public void setTime(Date date) {
     this.time = new SimpleDateFormat("HH:mm").format(date);
+  }
+
+  public String getKeyType() {
+    return keyType;
+  }
+
+  public void setKeyType(String keyType) {
+    this.keyType = keyType;
   }
 }
