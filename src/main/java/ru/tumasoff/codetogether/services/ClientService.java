@@ -13,9 +13,15 @@ public class ClientService {
 
   public void create(String roomId, Client client) {
     Optional<Room> roomOpt = roomService.findById(roomId);
-    roomOpt
-      .map(Room::getClients)
-      .ifPresent(map -> map.putIfAbsent(client.getUsername(), client));
+    if (roomOpt.isEmpty())
+      return;
+
+    Room room = roomOpt.get();
+    if (room.getClients().get(client.getUsername()) == null) {
+      synchronized (ClientService.class) {
+        room.getClients().putIfAbsent(client.getUsername(), client);
+      }
+    }
   }
 
   public Optional<Client> findByUsername(String roomId, String username) {

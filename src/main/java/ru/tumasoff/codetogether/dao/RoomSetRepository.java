@@ -13,14 +13,14 @@ public class RoomSetRepository {
     if (room.getId() == null)
       throw new IllegalArgumentException("Cannot save room without ID");
 
-    rooms.put(room.getId(), room);
+    if (rooms.get(room.getId()) == null) {
+      synchronized (RoomSetRepository.class) {
+        rooms.putIfAbsent(room.getId(), room);
+      }
+    }
   }
 
   public Optional<Room> findById(String roomId) {
     return Optional.ofNullable(rooms.get(roomId));
-  }
-
-  public void exists() {
-
   }
 }
