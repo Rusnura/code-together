@@ -1,10 +1,11 @@
 package ru.tumasoff.codetogether.models;
 
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class Room {
-  private UUID id;
+  private final UUID id;
+  private final Map<String, Client> clients = new ConcurrentHashMap<>();
 
   public Room(UUID id) {
     this.id = id;
@@ -14,8 +15,8 @@ public class Room {
     return id;
   }
 
-  public void setId(UUID id) {
-    this.id = id;
+  public Map<String, Client> getClients() {
+    return clients;
   }
 
   @Override
