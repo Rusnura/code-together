@@ -1,11 +1,11 @@
 package ru.tumasoff.codetogether.models;
 
-import org.springframework.util.ObjectUtils;
-
 import java.util.Objects;
 
 public class Client {
   private final String username;
+  private int selectionStartPosition = 0;
+  private int selectionEndPosition = 0;
 
   public Client(String username) {
     Objects.requireNonNull(username, "Session id cannot be null!");
@@ -19,6 +19,22 @@ public class Client {
   @Override
   public int hashCode() {
     return username.hashCode();
+  }
+
+  public int getSelectionStartPosition() {
+    return selectionStartPosition;
+  }
+
+  public void setSelectionStartPosition(int selectionStartPosition) {
+    this.selectionStartPosition = selectionStartPosition;
+  }
+
+  public int getSelectionEndPosition() {
+    return selectionEndPosition;
+  }
+
+  public void setSelectionEndPosition(int selectionEndPosition) {
+    this.selectionEndPosition = selectionEndPosition;
   }
 
   @Override
