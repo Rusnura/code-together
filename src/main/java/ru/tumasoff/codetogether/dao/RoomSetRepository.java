@@ -7,7 +7,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Component
 public class RoomSetRepository {
-  private final Map<UUID, Room> rooms = new ConcurrentHashMap<>();
+  private final Map<String, Room> rooms = new ConcurrentHashMap<>();
 
   public void save(Room room) {
     if (room.getId() == null)
@@ -16,8 +16,8 @@ public class RoomSetRepository {
     rooms.put(room.getId(), room);
   }
 
-  public Optional<Room> findById(UUID roomId) {
-    return Optional.of(rooms.get(roomId));
+  public Optional<Room> findById(String roomId) {
+    return Optional.ofNullable(rooms.get(roomId));
   }
 
   public void exists() {

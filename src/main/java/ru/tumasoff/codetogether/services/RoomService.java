@@ -4,7 +4,6 @@ import org.springframework.stereotype.Service;
 import ru.tumasoff.codetogether.dao.RoomSetRepository;
 import ru.tumasoff.codetogether.models.Room;
 import java.util.Optional;
-import java.util.UUID;
 
 @Service
 public class RoomService {
@@ -14,7 +13,7 @@ public class RoomService {
     roomRepo.save(room);
   }
 
-  public Optional<Room> findById(UUID id) {
+  public Optional<Room> findById(String id) {
     return roomRepo.findById(id);
   }
 

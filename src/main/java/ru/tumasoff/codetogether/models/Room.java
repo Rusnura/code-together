@@ -4,14 +4,14 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class Room {
-  private final UUID id;
+  private final String id;
   private final Map<String, Client> clients = new ConcurrentHashMap<>();
 
-  public Room(UUID id) {
+  public Room(String id) {
     this.id = id;
   }
 
-  public UUID getId() {
+  public String getId() {
     return id;
   }
 
