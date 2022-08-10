@@ -1,5 +1,8 @@
 package ru.tumasoff.codetogether.controllers;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
@@ -15,17 +18,51 @@ import ru.tumasoff.codetogether.services.ClientService;
 import ru.tumasoff.codetogether.services.RoomService;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Controller
 public class MessageController {
   private final SimpMessagingTemplate messagingTemplate;
   private final RoomService roomService;
   private final ClientService clientService;
+  private final ObjectMapper objectMapper;
 
   @MessageMapping("/room/{roomId}")
-  public void send(Message message) {
-    OutputMessage outputMessage = new OutputMessage(message);
-    messagingTemplate.convertAndSend(WebSocketConfiguration.TOPIC_PREFIX + "/" + message.getRoomId(), outputMessage);
+  public void send(Message message) throws Exception {
+    Optional<Room> roomOpt = roomService.findById(message.getRoomId());
+    if (roomOpt.isEmpty())
+      return;
+
+    Optional<Client> clientOpt = clientService.findByUsername(message.getRoomId(), message.getUsername());
+    if (clientOpt.isEmpty())
+      return;
+
+    Room room = roomOpt.get();
+    Client client = clientOpt.get();
+
+    String pressedKey = message.getKey();
+    if (pressedKey == null) { // click message - navigation stuff
+      client.setSelectionStartPosition(message.getStartCursorPosition());
+      client.setSelectionEndPosition(message.getEndCursorPosition());
+    } else if (pressedKey.length() == 1 || "Enter".equals(pressedKey)) { // It's a char pressed?
+      String k = (pressedKey.length() == 1) ? pressedKey : "\n";
+      int start = client.getSelectionStartPosition();
+      int end = client.getSelectionEndPosition();
+      String before = room.getText().substring(0, start);
+      String after = room.getText().substring(end);
+      String text = before + k + after;
+      room.setText(text);
+
+      client.setSelectionStartPosition(message.getStartCursorPosition());
+      client.setSelectionEndPosition(message.getEndCursorPosition());
+    } else { // 1st: it's navigation stuff?
+      client.setSelectionStartPosition(message.getStartCursorPosition());
+      client.setSelectionEndPosition(message.getEndCursorPosition());
+    }
+
+
+    String response = objectMapper.writeValueAsString(room);
+    messagingTemplate.convertAndSend(WebSocketConfiguration.TOPIC_PREFIX + "/" + message.getRoomId(), response);
   }
 
   @SubscribeMapping("/room/{roomId}")
@@ -54,9 +91,13 @@ public class MessageController {
     messagingTemplate.convertAndSend(WebSocketConfiguration.TOPIC_PREFIX + "/" + roomId, outputMessage);
   }
 
-  public MessageController(SimpMessagingTemplate messagingTemplate, RoomService roomService, ClientService clientService) {
+  public MessageController(SimpMessagingTemplate messagingTemplate,
+                           RoomService roomService,
+                           ClientService clientService,
+                           ObjectMapper objectMapper) {
     this.messagingTemplate = messagingTemplate;
     this.roomService = roomService;
     this.clientService = clientService;
+    this.objectMapper = objectMapper;
   }
 }
