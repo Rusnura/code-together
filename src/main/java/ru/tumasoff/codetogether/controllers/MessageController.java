@@ -76,16 +76,6 @@ public class MessageController {
     messagingTemplate.convertAndSend(WebSocketConfiguration.TOPIC_PREFIX + "/" + message.getRoomId(), response);
   }
 
-  @MessageMapping("/room/{roomId}/status")
-  public void handleStatus(JsonNode message,
-                           SimpMessageHeaderAccessor accessor) {
-
-    List<String> usernameHeaders = accessor.getNativeHeader("username");
-    if (usernameHeaders == null || usernameHeaders.size() != 1)
-      throw new IllegalArgumentException("Username native header isn't illegal (headers size != 1)!");
-//    messagingTemplate.convertAndSendToUser();
-  }
-
   @SubscribeMapping("/room/{roomId}")
   public void subscribeEvent(@DestinationVariable("roomId") String roomId,
                              SimpMessageHeaderAccessor accessor) {
