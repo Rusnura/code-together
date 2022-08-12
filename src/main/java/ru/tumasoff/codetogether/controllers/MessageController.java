@@ -1,7 +1,7 @@
 package ru.tumasoff.codetogether.controllers;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -87,19 +87,36 @@ public class MessageController {
     if (username == null)
       throw new IllegalArgumentException("Username native header isn't illegal (header is null)!");
 
-    Room room = new Room(roomId);
     if (roomService.findById(roomId).isEmpty())
-      roomService.create(room);
+      roomService.create(new Room(roomId));
 
     Client client = new Client(username);
     clientService.create(roomId, client);
 
-    OutputMessage outputMessage = new OutputMessage();
-    outputMessage.setType("connect");
-    outputMessage.setRoomId(roomId);
-    outputMessage.setTime(new Date());
-    outputMessage.setUsername(username);
-    messagingTemplate.convertAndSend(WebSocketConfiguration.TOPIC_PREFIX + "/" + roomId, outputMessage);
+    Optional<Room> roomOpt = roomService.findById(roomId);
+    if (roomOpt.isEmpty())
+      return;
+    Room room = roomOpt.get();
+    OutputMessage connectionMessage = new OutputMessage();
+    connectionMessage.setType("connect");
+    connectionMessage.setRoomId(room.getId());
+    connectionMessage.setTime(new Date());
+    connectionMessage.setUsername(username);
+
+    ObjectNode roomInfo = objectMapper.createObjectNode();
+    roomInfo.put("text", room.getText());
+
+    ArrayNode clients = objectMapper.createArrayNode();
+    room.getClients().values().forEach(c -> {
+      ObjectNode cc = objectMapper.createObjectNode();
+      cc.put("username", c.getUsername());
+      cc.put("startCursorPosition", c.getSelectionStartPosition());
+      cc.put("endCursorPosition", c.getSelectionStartPosition());
+      clients.add(cc);
+    });
+    roomInfo.set("clients", clients);
+    messagingTemplate.convertAndSend(WebSocketConfiguration.TOPIC_PREFIX + "/" + roomId, connectionMessage);
+    messagingTemplate.convertAndSend(WebSocketConfiguration.TOPIC_PREFIX + "/" + roomId + "/status", roomInfo);
   }
 
   public MessageController(SimpMessagingTemplate messagingTemplate,
