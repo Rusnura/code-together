@@ -1,8 +1,8 @@
 package ru.tumasoff.codetogether.controllers;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
@@ -41,28 +41,49 @@ public class MessageController {
     Client client = clientOpt.get();
 
     String pressedKey = message.getKey();
-    if (pressedKey == null) { // click message - navigation stuff
-      client.setSelectionStartPosition(message.getStartCursorPosition());
-      client.setSelectionEndPosition(message.getEndCursorPosition());
-    } else if (pressedKey.length() == 1 || "Enter".equals(pressedKey)) { // It's a char pressed?
-      String k = (pressedKey.length() == 1) ? pressedKey : "\n";
-      int start = client.getSelectionStartPosition();
-      int end = client.getSelectionEndPosition();
-      String before = room.getText().substring(0, start);
-      String after = room.getText().substring(end);
-      String text = before + k + after;
-      room.setText(text);
-
-      client.setSelectionStartPosition(message.getStartCursorPosition());
-      client.setSelectionEndPosition(message.getEndCursorPosition());
-    } else { // 1st: it's navigation stuff?
-      client.setSelectionStartPosition(message.getStartCursorPosition());
-      client.setSelectionEndPosition(message.getEndCursorPosition());
+    ObjectNode response = objectMapper.createObjectNode();
+    response.put("username", message.getUsername());
+    response.put("roomId", message.getRoomId());
+    synchronized (this) {
+      if (pressedKey == null) { // click message - navigation stuff
+        response.put("type", "navigation");
+        response.put("startCursorPosition", message.getStartCursorPosition());
+        response.put("endCursorPosition", message.getEndCursorPosition());
+        client.setSelectionStartPosition(message.getStartCursorPosition());
+        client.setSelectionEndPosition(message.getEndCursorPosition());
+      } else if (pressedKey.length() == 1 || "Enter".equals(pressedKey)) { // It's a char pressed?
+        response.put("type", "insert");
+        String k = (pressedKey.length() == 1) ? pressedKey : "\n";
+        response.put("key", k);
+        int start = client.getSelectionStartPosition();
+        int end = client.getSelectionEndPosition();
+        String before = room.getText().substring(0, start);
+        String after = room.getText().substring(end);
+        String text = before + k + after;
+        room.setText(text);
+        response.put("text", text);
+//        client.setSelectionStartPosition(message.getStartCursorPosition());
+//        client.setSelectionEndPosition(message.getEndCursorPosition());
+      } else { // 1st: it's navigation stuff?
+        response.put("type", "navigation");
+        response.put("startCursorPosition", message.getStartCursorPosition());
+        response.put("endCursorPosition", message.getEndCursorPosition());
+        client.setSelectionStartPosition(message.getStartCursorPosition());
+        client.setSelectionEndPosition(message.getEndCursorPosition());
+      }
     }
 
-
-    String response = objectMapper.writeValueAsString(room);
     messagingTemplate.convertAndSend(WebSocketConfiguration.TOPIC_PREFIX + "/" + message.getRoomId(), response);
+  }
+
+  @MessageMapping("/room/{roomId}/status")
+  public void handleStatus(JsonNode message,
+                           SimpMessageHeaderAccessor accessor) {
+
+    List<String> usernameHeaders = accessor.getNativeHeader("username");
+    if (usernameHeaders == null || usernameHeaders.size() != 1)
+      throw new IllegalArgumentException("Username native header isn't illegal (headers size != 1)!");
+//    messagingTemplate.convertAndSendToUser();
   }
 
   @SubscribeMapping("/room/{roomId}")
@@ -84,7 +105,7 @@ public class MessageController {
     clientService.create(roomId, client);
 
     OutputMessage outputMessage = new OutputMessage();
-    outputMessage.setType("CONNECT");
+    outputMessage.setType("connect");
     outputMessage.setRoomId(roomId);
     outputMessage.setTime(new Date());
     outputMessage.setUsername(username);
