@@ -16,6 +16,7 @@ import ru.tumasoff.codetogether.models.OutputMessage;
 import ru.tumasoff.codetogether.models.Room;
 import ru.tumasoff.codetogether.services.ClientService;
 import ru.tumasoff.codetogether.services.RoomService;
+import ru.tumasoff.codetogether.services.TypeService;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -26,6 +27,7 @@ public class MessageController {
   private final RoomService roomService;
   private final ClientService clientService;
   private final ObjectMapper objectMapper;
+  private final TypeService typeService;
 
   @MessageMapping("/room/{roomId}")
   public void send(Message message) throws Exception {
@@ -40,37 +42,12 @@ public class MessageController {
     Room room = roomOpt.get();
     Client client = clientOpt.get();
 
-    String pressedKey = message.getKey();
     ObjectNode response = objectMapper.createObjectNode();
-    response.put("username", message.getUsername());
-    response.put("roomId", message.getRoomId());
     synchronized (this) {
-      if (pressedKey == null) { // click message - navigation stuff
-        response.put("type", "navigation");
-        response.put("startCursorPosition", message.getStartCursorPosition());
-        response.put("endCursorPosition", message.getEndCursorPosition());
-        client.setSelectionStartPosition(message.getStartCursorPosition());
-        client.setSelectionEndPosition(message.getEndCursorPosition());
-      } else if (pressedKey.length() == 1 || "Enter".equals(pressedKey)) { // It's a char pressed?
-        response.put("type", "insert");
-        String k = (pressedKey.length() == 1) ? pressedKey : "\n";
-        response.put("key", k);
-        int start = client.getSelectionStartPosition();
-        int end = client.getSelectionEndPosition();
-        String before = room.getText().substring(0, start);
-        String after = room.getText().substring(end);
-        String text = before + k + after;
-        room.setText(text);
-        response.put("text", text);
-//        client.setSelectionStartPosition(message.getStartCursorPosition());
-//        client.setSelectionEndPosition(message.getEndCursorPosition());
-      } else { // 1st: it's navigation stuff?
-        response.put("type", "navigation");
-        response.put("startCursorPosition", message.getStartCursorPosition());
-        response.put("endCursorPosition", message.getEndCursorPosition());
-        client.setSelectionStartPosition(message.getStartCursorPosition());
-        client.setSelectionEndPosition(message.getEndCursorPosition());
-      }
+      String pressedKey = message.getKey();
+      response.put("username", message.getUsername());
+      response.put("roomId", message.getRoomId());
+      typeService.process(room, client, pressedKey, message, response);
     }
 
     messagingTemplate.convertAndSend(WebSocketConfiguration.TOPIC_PREFIX + "/" + message.getRoomId(), response);
@@ -122,10 +99,12 @@ public class MessageController {
   public MessageController(SimpMessagingTemplate messagingTemplate,
                            RoomService roomService,
                            ClientService clientService,
-                           ObjectMapper objectMapper) {
+                           ObjectMapper objectMapper,
+                           TypeService typeService) {
     this.messagingTemplate = messagingTemplate;
     this.roomService = roomService;
     this.clientService = clientService;
     this.objectMapper = objectMapper;
+    this.typeService = typeService;
   }
 }
