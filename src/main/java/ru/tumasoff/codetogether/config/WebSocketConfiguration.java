@@ -13,6 +13,7 @@ public class WebSocketConfiguration implements WebSocketMessageBrokerConfigurer 
 
   @Override
   public void configureMessageBroker(MessageBrokerRegistry registry) {
+    registry.setPreservePublishOrder(true);
     registry.enableSimpleBroker(TOPIC_PREFIX);
     registry.setApplicationDestinationPrefixes("/code-together");
   }
