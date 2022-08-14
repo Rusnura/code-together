@@ -28,8 +28,8 @@ public class TypeService {
       return;
     }
 
-    if (BACKSPACE_KEY.contains(pressedKey)) {
-      doProcessBackspace(room, client, response);
+    if (BACKSPACE_KEY.equals(pressedKey)) {
+      doProcessBackspace(room, message, client, response);
       return;
     }
 
@@ -57,22 +57,31 @@ public class TypeService {
     // client.setSelectionEndPosition(message.getEndCursorPosition());
   }
 
-  private void doProcessBackspace(Room room, Client client, ObjectNode response) {
+  private void doProcessBackspace(Room room, Message message, Client client, ObjectNode response) {
     response.put("type", "backspace");
     int start = client.getSelectionStartPosition();
     int end = client.getSelectionEndPosition();
 
+    int newCursorStartPosition, newCursorEndPosition;
     String before, after, text;
     if (start == end) { // Remove one symbol
+      if (start == 0)
+        return;
       before = room.getText().substring(0, start - 1);
+      newCursorStartPosition = start - 1;
+      newCursorEndPosition = start - 1;
     } else {
       before = room.getText().substring(0, start);
+      newCursorStartPosition = start;
+      newCursorEndPosition = start;
     }
     after = room.getText().substring(end);
     text = before + after;
     room.setText(text);
     response.put("text", text);
-    // Do need I process cursor position?
+
+    client.setSelectionStartPosition(newCursorStartPosition);
+    client.setSelectionEndPosition(newCursorEndPosition);
   }
 
   private void doProcessDelete(Room room, Client client, ObjectNode response) {
@@ -80,13 +89,13 @@ public class TypeService {
     int start = client.getSelectionStartPosition();
     int end = client.getSelectionEndPosition();
 
-    String before, after, text;
+    String before = room.getText().substring(0, start);
+    String after, text;
     if (start == end) { // Remove one symbol
-      before = room.getText().substring(0, start - 1);
+      after = room.getText().substring(end);
     } else {
-      before = room.getText().substring(0, start);
+      after = room.getText().substring(end);
     }
-    after = room.getText().substring(end);
     text = before + after;
     room.setText(text);
     response.put("text", text);
