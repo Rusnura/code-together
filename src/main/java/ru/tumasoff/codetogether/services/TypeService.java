@@ -16,16 +16,15 @@ public class TypeService {
 
   private static final String ENTER_KEY = "Enter";
   private static final String BACKSPACE_KEY = "Backspace";
-  private static final String DELETE_KEY = "Backspace";
+  private static final String DELETE_KEY = "Delete";
 
 
   public void process(Room room, Client client, String pressedKey, /* FIXME: Refactor later */Message message, ObjectNode response) {
     if (pressedKey == null)
       pressedKey = "MouseClick";
 
-    if (NAVIGATION_KEYS.contains(pressedKey)) {
-      doProcessNavigation(client, message, response);
-      return;
+    if (pressedKey.length() == 1) { // is char pressed?
+      doProcessInsert(room, client, pressedKey, response);
     }
 
     if (BACKSPACE_KEY.equals(pressedKey)) {
@@ -38,8 +37,14 @@ public class TypeService {
       return;
     }
 
-    if (pressedKey.length() == 1) { // is char pressed?
-      doProcessInsert(room, client, pressedKey, response);
+    if (NAVIGATION_KEYS.contains(pressedKey)) {
+      doProcessNavigation(client, message, response);
+      return;
+    }
+
+    if (DELETE_KEY.equals(pressedKey)) {
+      doProcessDelete(room, client, response);
+      return;
     }
   }
 
@@ -89,17 +94,27 @@ public class TypeService {
     int start = client.getSelectionStartPosition();
     int end = client.getSelectionEndPosition();
 
-    String before = room.getText().substring(0, start);
-    String after, text;
+    int newCursorStartPosition, newCursorEndPosition;
+    String before, after, text;
     if (start == end) { // Remove one symbol
-      after = room.getText().substring(end);
+      if (room.getText().length() < end + 1)
+        return;
+
+      before = room.getText().substring(0, start);
+      after = room.getText().substring(end + 1);
     } else {
+      before = room.getText().substring(0, start);
       after = room.getText().substring(end);
     }
+    newCursorStartPosition = start;
+    newCursorEndPosition = start;
+
     text = before + after;
     room.setText(text);
     response.put("text", text);
-    // Do need I process cursor position?
+
+    client.setSelectionStartPosition(newCursorStartPosition);
+    client.setSelectionEndPosition(newCursorEndPosition);
   }
   private void doProcessNavigation(Client client, Message message, ObjectNode response) {
     response.put("type", "navigation");
