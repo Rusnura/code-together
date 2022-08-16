@@ -81,7 +81,7 @@ public class MessageController {
     connectionMessage.setUsername(username);
 
     ObjectNode roomInfo = objectMapper.createObjectNode();
-    roomInfo.put("text", room.getText());
+    roomInfo.put("text", room.getTextBuffer().toString());
 
     ArrayNode clients = objectMapper.createArrayNode();
     room.getClients().values().forEach(c -> {

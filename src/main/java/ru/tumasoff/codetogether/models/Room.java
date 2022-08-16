@@ -6,7 +6,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class Room {
   private final String id;
   private final Map<String, Client> clients = new ConcurrentHashMap<>();
-  private String text = "";
+  private StringBuffer textBuffer = new StringBuffer("");
 
   public Room(String id) {
     this.id = id;
@@ -20,12 +20,8 @@ public class Room {
     return clients;
   }
 
-  public String getText() {
-    return text;
-  }
-
-  public void setText(String text) {
-    this.text = text;
+  public StringBuffer getTextBuffer() {
+    return textBuffer;
   }
 
   @Override

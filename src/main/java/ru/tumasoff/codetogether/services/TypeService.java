@@ -5,7 +5,6 @@ import org.springframework.stereotype.Service;
 import ru.tumasoff.codetogether.models.Client;
 import ru.tumasoff.codetogether.models.Message;
 import ru.tumasoff.codetogether.models.Room;
-
 import java.util.List;
 
 @Service
@@ -51,13 +50,13 @@ public class TypeService {
   private void doProcessInsert(Room room, Client client, String key, ObjectNode response) {
     response.put("type", "insert");
     response.put("key", key);
-    int start = client.getSelectionStartPosition();
-    int end = client.getSelectionEndPosition();
-    String before = room.getText().substring(0, start);
-    String after = room.getText().substring(end);
-    String text = before + key + after;
-    room.setText(text);
-    response.put("text", text);
+//    int start = client.getSelectionStartPosition();
+//    int end = client.getSelectionEndPosition();
+//    String before = room.getTextBuffer().substring(0, start);
+//    String after = room.getTextBuffer().substring(end);
+//    String text = before + key + after;
+    room.getTextBuffer().insert(client.getSelectionEndPosition(), key);
+    response.put("text", room.getTextBuffer().toString());
     // client.setSelectionStartPosition(message.getStartCursorPosition());
     // client.setSelectionEndPosition(message.getEndCursorPosition());
   }
@@ -68,22 +67,17 @@ public class TypeService {
     int end = client.getSelectionEndPosition();
 
     int newCursorStartPosition, newCursorEndPosition;
-    String before, after, text;
     if (start == end) { // Remove one symbol
       if (start == 0)
         return;
-      before = room.getText().substring(0, start - 1);
       newCursorStartPosition = start - 1;
       newCursorEndPosition = start - 1;
     } else {
-      before = room.getText().substring(0, start);
       newCursorStartPosition = start;
       newCursorEndPosition = start;
     }
-    after = room.getText().substring(end);
-    text = before + after;
-    room.setText(text);
-    response.put("text", text);
+    room.getTextBuffer().replace(start, end, "");
+    response.put("text", room.getTextBuffer().toString());
 
     client.setSelectionStartPosition(newCursorStartPosition);
     client.setSelectionEndPosition(newCursorEndPosition);
@@ -94,24 +88,12 @@ public class TypeService {
     int start = client.getSelectionStartPosition();
     int end = client.getSelectionEndPosition();
 
-    int newCursorStartPosition, newCursorEndPosition;
-    String before, after, text;
-    if (start == end) { // Remove one symbol
-      if (room.getText().length() < end + 1)
-        return;
 
-      before = room.getText().substring(0, start);
-      after = room.getText().substring(end + 1);
-    } else {
-      before = room.getText().substring(0, start);
-      after = room.getText().substring(end);
-    }
-    newCursorStartPosition = start;
-    newCursorEndPosition = start;
+    int newCursorStartPosition = start;
+    int newCursorEndPosition = start;
 
-    text = before + after;
-    room.setText(text);
-    response.put("text", text);
+    room.getTextBuffer().replace(start, end, "");
+    response.put("text", room.getTextBuffer().toString());
 
     client.setSelectionStartPosition(newCursorStartPosition);
     client.setSelectionEndPosition(newCursorEndPosition);
