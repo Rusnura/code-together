@@ -6,7 +6,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class Room {
   private final String id;
   private final Map<String, Client> clients = new ConcurrentHashMap<>();
-  private StringBuffer textBuffer = new StringBuffer("");
+  private final StringBuffer textBuffer = new StringBuffer("");
 
   public Room(String id) {
     this.id = id;
