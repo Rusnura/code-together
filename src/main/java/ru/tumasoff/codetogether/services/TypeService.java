@@ -50,15 +50,17 @@ public class TypeService {
   private void doProcessInsert(Room room, Client client, String key, ObjectNode response) {
     response.put("type", "insert");
     response.put("key", key);
-//    int start = client.getSelectionStartPosition();
-//    int end = client.getSelectionEndPosition();
-//    String before = room.getTextBuffer().substring(0, start);
-//    String after = room.getTextBuffer().substring(end);
-//    String text = before + key + after;
-    room.getTextBuffer().insert(client.getSelectionEndPosition(), key);
+
+    int end = client.getSelectionEndPosition();
+
+    room.getTextBuffer().insert(end, key);
     response.put("text", room.getTextBuffer().toString());
-    // client.setSelectionStartPosition(message.getStartCursorPosition());
-    // client.setSelectionEndPosition(message.getEndCursorPosition());
+
+    client.setSelectionStartPosition(end + 1);
+    client.setSelectionEndPosition(end + 1);
+
+    response.put("startCursorPosition", end + 1);
+    response.put("endCursorPosition", end + 1);
   }
 
   private void doProcessBackspace(Room room, Message message, Client client, ObjectNode response) {
@@ -81,6 +83,9 @@ public class TypeService {
 
     client.setSelectionStartPosition(newCursorStartPosition);
     client.setSelectionEndPosition(newCursorEndPosition);
+
+    response.put("startCursorPosition", newCursorStartPosition);
+    response.put("endCursorPosition", newCursorEndPosition);
   }
 
   private void doProcessDelete(Room room, Client client, ObjectNode response) {
@@ -89,14 +94,14 @@ public class TypeService {
     int end = client.getSelectionEndPosition();
 
 
-    int newCursorStartPosition = start;
-    int newCursorEndPosition = start;
-
     room.getTextBuffer().replace(start, end, "");
     response.put("text", room.getTextBuffer().toString());
 
-    client.setSelectionStartPosition(newCursorStartPosition);
-    client.setSelectionEndPosition(newCursorEndPosition);
+    client.setSelectionStartPosition(start);
+    client.setSelectionEndPosition(start);
+
+    response.put("startCursorPosition", start);
+    response.put("endCursorPosition", start);
   }
   private void doProcessNavigation(Client client, Message message, ObjectNode response) {
     response.put("type", "navigation");
@@ -104,5 +109,8 @@ public class TypeService {
     response.put("endCursorPosition", message.getEndCursorPosition());
     client.setSelectionStartPosition(message.getStartCursorPosition());
     client.setSelectionEndPosition(message.getEndCursorPosition());
+
+    response.put("startCursorPosition", message.getStartCursorPosition());
+    response.put("endCursorPosition", message.getEndCursorPosition());
   }
 }
